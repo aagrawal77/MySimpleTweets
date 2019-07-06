@@ -4,7 +4,9 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="5dp">
+    android:layout_margin="5dp"
+    tools:layout_editor_absoluteX="5dp"
+    tools:layout_editor_absoluteY="5dp">
 
     <ImageView
         android:id="@+id/ivProfileImage"
@@ -33,9 +35,9 @@
         android:layout_marginLeft="5dp"
         android:layout_marginEnd="8dp"
         android:autoLink="all"
-        android:textColorLink="#ff1da1f2"
         android:text="TextView"
         android:textColor="@android:color/black"
+        android:textColorLink="#ff1da1f2"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/ivProfileImage"
         app:layout_constraintTop_toBottomOf="@+id/tvUserName" />
@@ -68,11 +70,11 @@
         android:id="@+id/btnRetweet"
         android:layout_width="20dp"
         android:layout_height="20dp"
+        android:layout_marginStart="84dp"
         android:layout_marginTop="8dp"
-        android:layout_marginEnd="80dp"
         android:background="@null"
         android:tint="#ffaab8c2"
-        app:layout_constraintEnd_toStartOf="@+id/btnLike"
+        app:layout_constraintStart_toEndOf="@+id/btnRespond"
         app:layout_constraintTop_toBottomOf="@+id/tvDate"
         app:srcCompat="@drawable/ic_vector_retweet_stroke" />
 
@@ -81,7 +83,7 @@
         android:layout_width="20dp"
         android:layout_height="20dp"
         android:layout_marginTop="8dp"
-        android:layout_marginEnd="124dp"
+        android:layout_marginEnd="112dp"
         android:background="@null"
         android:tint="#ffaab8c2"
         app:layout_constraintEnd_toEndOf="parent"
@@ -98,6 +100,28 @@
         android:tint="#ffaab8c2"
         app:layout_constraintStart_toEndOf="@+id/ivProfileImage"
         app:layout_constraintTop_toBottomOf="@+id/tvDate"
-        app:srcCompat="@drawable/vector_compose_dm_fab" />
+        app:srcCompat="@drawable/respond_icon" />
+
+    <TextView
+        android:id="@+id/tvRetweet"
+        android:layout_width="wrap_content"
+        android:layout_height="20dp"
+        android:layout_marginStart="4dp"
+        android:layout_marginTop="8dp"
+        android:text="TextView"
+        android:textColor="#ffaab8c2"
+        app:layout_constraintStart_toEndOf="@+id/btnRetweet"
+        app:layout_constraintTop_toBottomOf="@+id/tvDate" />
+
+    <TextView
+        android:id="@+id/tvLike"
+        android:layout_width="wrap_content"
+        android:layout_height="20dp"
+        android:layout_marginStart="3dp"
+        android:layout_marginTop="8dp"
+        android:text="TextView"
+        android:textColor="#ffaab8c2"
+        app:layout_constraintStart_toEndOf="@+id/btnLike"
+        app:layout_constraintTop_toBottomOf="@+id/tvDate" />
 
 </android.support.constraint.ConstraintLayout>

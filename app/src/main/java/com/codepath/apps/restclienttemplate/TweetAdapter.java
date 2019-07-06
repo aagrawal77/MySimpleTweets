@@ -1,18 +1,23 @@
 package com.codepath.apps.restclienttemplate;
 
 import android.content.Context;
+import android.content.Intent;
 import android.support.annotation.NonNull;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
 import android.text.format.DateUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.codepath.apps.restclienttemplate.models.Tweet;
+
+import org.parceler.Parcels;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -39,6 +44,8 @@ public class TweetAdapter extends RecyclerView.Adapter<TweetAdapter.ViewHolder> 
 
         View tweetView = inflater.inflate(R.layout.item_tweet, viewGroup,  false);
         ViewHolder viewHolder = new ViewHolder(tweetView);
+        viewHolder.context = context;
+        viewHolder.tweets = tweets;
         return viewHolder;
     }
 
@@ -54,6 +61,10 @@ public class TweetAdapter extends RecyclerView.Adapter<TweetAdapter.ViewHolder> 
         viewHolder.tvBody.setText(tweet.body);
         viewHolder.tvDate.setText(getRelativeTimeAgo(tweet.createdAt));
         viewHolder.tvScreenName.setText("@" + tweet.user.screenName);
+        Integer retweets = tweet.retweetCount;
+        Integer likes = tweet.likeCount;
+        viewHolder.tvRetweet.setText(retweets.toString());
+        viewHolder.tvLike.setText(likes.toString());
 
         Glide.with(context)
                 .load(tweet.user.profileImageUrl)
@@ -75,6 +86,16 @@ public class TweetAdapter extends RecyclerView.Adapter<TweetAdapter.ViewHolder> 
         public TextView tvBody;
         public TextView tvDate;
         public TextView tvScreenName;
+        public ImageButton btnRespond;
+        public ImageButton btnLike;
+        public boolean liked;
+        public Context context;
+        public List<Tweet> tweets;
+        public TextView tvRetweet;
+        public TextView tvLike;
+        public TwitterClient client;
+        public Tweet tweet;
+        private final String ACTIVITY = "respond";
 
         public ViewHolder(View itemView) {
             super(itemView);
@@ -85,8 +106,38 @@ public class TweetAdapter extends RecyclerView.Adapter<TweetAdapter.ViewHolder> 
             tvBody = (TextView) itemView.findViewById(R.id.tvBody);
             tvDate = (TextView) itemView.findViewById(R.id.tvDate);
             tvScreenName = (TextView) itemView.findViewById(R.id.tvScreenName);
-        }
+            btnRespond = (ImageButton) itemView.findViewById(R.id.btnRespond);
+            btnLike = (ImageButton) itemView.findViewById(R.id.btnLike);
+            tvRetweet = (TextView) itemView.findViewById(R.id.tvRetweet);
+            tvLike = (TextView) itemView.findViewById(R.id.tvLike);
+            liked = false;
+            client = TwitterApp.getRestClient(context);
 
+            this.btnRespond.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent intent = new Intent(context, ComposeActivity.class);
+                    tweet = tweets.get(getAdapterPosition());
+                    intent.putExtra("tweet", Parcels.wrap(tweet));
+                    intent.putExtra("og", ACTIVITY);
+                    context.startActivity(intent);
+                }
+            });
+
+            this.btnLike.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (!liked) {
+                        btnLike.setImageResource(R.drawable.ic_vector_heart);
+                        btnLike.setColorFilter(ContextCompat.getColor(context, R.color.medium_red));
+                    } else {
+                        btnLike.setImageResource(R.drawable.ic_vector_heart_stroke);
+                        btnLike.setColorFilter(ContextCompat.getColor(context, R.color.medium_gray));
+                    }
+                    liked = !liked;
+                }
+            });
+        }
     }
 
     // relative time

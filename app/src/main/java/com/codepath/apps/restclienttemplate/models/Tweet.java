@@ -12,6 +12,8 @@ public class Tweet {
     public long uid; // database ID for the tweet
     public String createdAt;
     public User user;
+    public int retweetCount;
+    public int likeCount;
 
     public Tweet() {}
 
@@ -24,6 +26,8 @@ public class Tweet {
         tweet.uid = object.getLong("id");
         tweet.createdAt = object.getString("created_at");
         tweet.user = User.fromJSON(object.getJSONObject("user"));
+        tweet.retweetCount = object.getInt("retweet_count");
+        tweet.likeCount = object.getInt("favorite_count");
         return tweet;
 
     }

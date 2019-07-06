@@ -13,9 +13,9 @@ import android.view.View;
 import android.widget.EditText;
 
 import com.codepath.apps.restclienttemplate.models.Tweet;
+import com.codepath.apps.restclienttemplate.models.User;
 import com.loopj.android.http.JsonHttpResponseHandler;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.parceler.Parcels;
@@ -25,12 +25,16 @@ import cz.msebera.android.httpclient.Header;
 public class ComposeActivity extends AppCompatActivity {
 
     EditText etTweet;
+    Tweet toRespond;
     TwitterClient client;
+    boolean response;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_compose);
+        response = false;
+        etTweet = (EditText) findViewById(R.id.etTweet);
 
         // sets ActionBar color to Twitter Blue
         ActionBar bar = getSupportActionBar();
@@ -39,6 +43,13 @@ public class ComposeActivity extends AppCompatActivity {
         final Drawable compose = getResources().getDrawable(R.drawable.ic_vector_compose);
         compose.setColorFilter(Color.WHITE, PorterDuff.Mode.SRC_ATOP);
         client = TwitterApp.getRestClient(this);
+
+        if (getIntent().getStringExtra("og").equals("respond")) {
+            response = true;
+            toRespond = (Tweet) Parcels.unwrap(getIntent().getParcelableExtra("tweet"));
+            User user = toRespond.user;
+            etTweet.setText("@" + user.screenName);
+        }
     }
 
     public void onCancel(View v) {
@@ -48,37 +59,48 @@ public class ComposeActivity extends AppCompatActivity {
     }
 
     public void onCompose(View v) {
-        etTweet = (EditText) findViewById(R.id.etTweet);
-        client.sendTweet(etTweet.getText().toString(), new JsonHttpResponseHandler() {
-            @Override
-            public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
-                Log.d("TwitterClient", errorResponse.toString());
-
-            }
-
-            @Override
-            public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONArray errorResponse) {
-                Log.d("TwitterClient", errorResponse.toString());
-            }
-
-            @Override
-            public void onFailure(int statusCode, Header[] headers, String responseString, Throwable throwable) {
-                Log.d("TwitterClient", responseString);
-            }
-
-            @Override
-            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
-                try {
-                    Tweet tweet = Tweet.fromJSON(response);
-                    Intent intent = new Intent();
-                    intent.putExtra("tweet", Parcels.wrap(tweet));
-                    setResult(RESULT_OK, intent);
-                    finish();
-                } catch (JSONException e) {
-                    e.printStackTrace();
+        if (response) {
+            client.sendReply(etTweet.getText().toString(), toRespond.uid, new JsonHttpResponseHandler() {
+                @Override
+                public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+                    try {
+                        Tweet tweet = Tweet.fromJSON(response);
+                        Intent intent = new Intent();
+                        intent.putExtra("tweet", Parcels.wrap(tweet));
+                        setResult(RESULT_OK, intent);
+                        finish();
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
                 }
-            }
-        });
 
+                @Override
+                public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
+                    Log.d("TwitterClient", errorResponse.toString());
+                }
+
+            });
+
+        } else {
+            client.sendTweet(etTweet.getText().toString(), new JsonHttpResponseHandler() {
+                @Override
+                public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
+                    Log.d("TwitterClient", errorResponse.toString());
+                }
+
+                @Override
+                public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+                    try {
+                        Tweet tweet = Tweet.fromJSON(response);
+                        Intent intent = new Intent();
+                        intent.putExtra("tweet", Parcels.wrap(tweet));
+                        setResult(RESULT_OK, intent);
+                        finish();
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+        }
     }
 }

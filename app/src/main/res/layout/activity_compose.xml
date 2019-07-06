@@ -34,6 +34,7 @@
         android:fontFamily="@font/archivo_narrow_bold"
         android:onClick="onCompose"
         android:text="Tweet"
+        android:textAllCaps="false"
         android:textColor="@android:color/white"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />

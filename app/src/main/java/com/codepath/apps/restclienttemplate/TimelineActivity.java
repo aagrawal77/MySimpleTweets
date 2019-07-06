@@ -36,6 +36,7 @@ public class TimelineActivity extends AppCompatActivity {
     RecyclerView rvTweets;
     private SwipeRefreshLayout swipeContainer;
     private final int REQUEST_CODE = 20;
+    private final String ACTIVITY = "string";
 
 
     @Override
@@ -77,7 +78,6 @@ public class TimelineActivity extends AppCompatActivity {
         EndlessRecyclerViewScrollListener scrollListener = new EndlessRecyclerViewScrollListener(layoutManager) {
             @Override
             public void onLoadMore(int page, int totalItemsCount, RecyclerView view) {
-                Log.i("XYZ", "inside loadMore");
                 loadNextDataFromApi(page);
             }
         };
@@ -89,14 +89,11 @@ public class TimelineActivity extends AppCompatActivity {
     }
 
     public void loadNextDataFromApi(int offset) {
-        Log.i("XYZ", "inside loadNext");
         client.moreTweets(new JsonHttpResponseHandler() {
             @Override
             public void onSuccess(int statusCode, Header[] headers, JSONArray response) {
-                Log.i("XYZ", "inside onSuccess");
 //                super.onSuccess(statusCode, headers, response);
                 for (int i = 0; i < response.length(); i++) {
-                    Log.i("XYZ", client.early_id.toString());
                     try {
                         Tweet tweet = Tweet.fromJSON(response.getJSONObject(i));
                         tweets.add(tweet);
@@ -157,14 +154,15 @@ public class TimelineActivity extends AppCompatActivity {
     }
 
     public void onComposeAction(MenuItem mi) {
-        Log.i("Compose", "Success!");
         Intent intent = new Intent(this, ComposeActivity.class);
+        intent.putExtra("og", ACTIVITY);
         startActivityForResult(intent, REQUEST_CODE);
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
         if (resultCode == RESULT_OK && requestCode == REQUEST_CODE) {
+            Log.i("XYZ", "inside result");
            Tweet tweet = (Tweet) Parcels.unwrap(intent.getParcelableExtra("tweet"));
            tweets.add(0, tweet);
            tweetAdapter.notifyItemInserted(0);
@@ -225,4 +223,5 @@ public class TimelineActivity extends AppCompatActivity {
             }
         });
     }
+
 }
