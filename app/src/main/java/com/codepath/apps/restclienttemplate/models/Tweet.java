@@ -20,18 +20,18 @@ public class Tweet {
     public Tweet() {}
 
     // deserialize the JSON
-    public static Tweet fromJSON(JSONObject object) throws JSONException {
+    public static Tweet fromJSON(JSONObject jsonObject) throws JSONException {
         Tweet tweet = new Tweet();
 
         // extract the values from JSON
-        tweet.body = object.getString("full_text");
-        tweet.uid = object.getLong("id");
-        tweet.createdAt = object.getString("created_at");
-        tweet.user = User.fromJSON(object.getJSONObject("user"));
-        tweet.retweetCount = object.getInt("retweet_count");
-        tweet.likeCount = object.getInt("favorite_count");
-        tweet.liked = object.getBoolean("favorited");
-        tweet.retweeted = object.getBoolean("retweeted");
+        tweet.body = jsonObject.getString("full_text");
+        tweet.uid = jsonObject.getLong("id");
+        tweet.createdAt = jsonObject.getString("created_at");
+        tweet.user = User.fromJSON(jsonObject.getJSONObject("user"));
+        tweet.retweetCount = jsonObject.getInt("retweet_count");
+        tweet.likeCount = jsonObject.getInt("favorite_count");
+        tweet.liked = jsonObject.getBoolean("favorited");
+        tweet.retweeted = jsonObject.getBoolean("retweeted");
         return tweet;
 
     }

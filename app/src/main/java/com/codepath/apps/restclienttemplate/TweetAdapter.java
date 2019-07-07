@@ -79,9 +79,15 @@ public class TweetAdapter extends RecyclerView.Adapter<TweetAdapter.ViewHolder> 
         if (tweet.liked) {
             viewHolder.btnLike.setImageResource(R.drawable.ic_vector_heart);
             viewHolder.btnLike.setColorFilter(ContextCompat.getColor(context, R.color.medium_red));
-        } else if (!tweet.liked){
+        } else if (!tweet.liked) {
             viewHolder.btnLike.setImageResource(R.drawable.ic_vector_heart_stroke);
             viewHolder.btnLike.setColorFilter(ContextCompat.getColor(context, R.color.medium_gray));
+        }
+
+        if (tweet.retweeted) {
+            viewHolder.btnRetweet.setColorFilter(ContextCompat.getColor(context, R.color.medium_green));
+        } else {
+            viewHolder.btnRetweet.setColorFilter(ContextCompat.getColor(context, R.color.medium_gray));
         }
     }
 
@@ -101,6 +107,7 @@ public class TweetAdapter extends RecyclerView.Adapter<TweetAdapter.ViewHolder> 
         public TextView tvScreenName;
         public ImageButton btnRespond;
         public ImageButton btnLike;
+        public ImageButton btnRetweet;
         public boolean liked;
         public Context context;
         public List<Tweet> tweets;
@@ -120,6 +127,7 @@ public class TweetAdapter extends RecyclerView.Adapter<TweetAdapter.ViewHolder> 
             tvDate = (TextView) itemView.findViewById(R.id.tvDate);
             tvScreenName = (TextView) itemView.findViewById(R.id.tvScreenName);
             btnRespond = (ImageButton) itemView.findViewById(R.id.btnRespond);
+            btnRetweet = (ImageButton) itemView.findViewById(R.id.btnRetweet);
             btnLike = (ImageButton) itemView.findViewById(R.id.btnLike);
             tvRetweet = (TextView) itemView.findViewById(R.id.tvRetweet);
             tvLike = (TextView) itemView.findViewById(R.id.tvLike);
@@ -155,13 +163,41 @@ public class TweetAdapter extends RecyclerView.Adapter<TweetAdapter.ViewHolder> 
                         client.subLike(tweet.uid, new JsonHttpResponseHandler() {
                             @Override
                             public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
-                                Log.i("XYZ", "delete this");
                                 tweet.likeCount -= 1;
                                 tweet.liked = !(tweet.liked);
                                 notifyItemChanged(position);
                             }
                         });
                     }
+                }
+            });
+
+            this.btnRetweet.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Log.i("XYZ", "clicked");
+                    final int position = getAdapterPosition();
+                    tweet = tweets.get(position);
+                    if (!tweet.retweeted) {
+                        client.retweet(tweet.uid, new JsonHttpResponseHandler() {
+                            @Override
+                            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+                                tweet.retweetCount += 1;
+                                tweet.retweeted = !tweet.retweeted;
+                                notifyItemChanged(position);
+                            }
+                        });
+                    } else if (tweet.retweeted) {
+                        client.unRetweet(tweet.uid, new JsonHttpResponseHandler() {
+                            @Override
+                            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+                                tweet.retweetCount -= 1;
+                                tweet.retweeted = !tweet.retweeted;
+                                notifyItemChanged(position);
+                            }
+                        });
+                    }
+
                 }
             });
         }
