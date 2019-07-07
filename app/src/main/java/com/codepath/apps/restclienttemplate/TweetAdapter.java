@@ -6,6 +6,7 @@ import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
 import android.text.format.DateUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,13 +17,17 @@ import android.widget.TextView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.codepath.apps.restclienttemplate.models.Tweet;
+import com.loopj.android.http.JsonHttpResponseHandler;
 
+import org.json.JSONObject;
 import org.parceler.Parcels;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Locale;
+
+import cz.msebera.android.httpclient.Header;
 
 public class TweetAdapter extends RecyclerView.Adapter<TweetAdapter.ViewHolder> {
 
@@ -70,6 +75,14 @@ public class TweetAdapter extends RecyclerView.Adapter<TweetAdapter.ViewHolder> 
                 .load(tweet.user.profileImageUrl)
                 .apply(RequestOptions.circleCropTransform())
                 .into(viewHolder.ivProfileImage);
+
+        if (tweet.liked) {
+            viewHolder.btnLike.setImageResource(R.drawable.ic_vector_heart);
+            viewHolder.btnLike.setColorFilter(ContextCompat.getColor(context, R.color.medium_red));
+        } else if (!tweet.liked){
+            viewHolder.btnLike.setImageResource(R.drawable.ic_vector_heart_stroke);
+            viewHolder.btnLike.setColorFilter(ContextCompat.getColor(context, R.color.medium_gray));
+        }
     }
 
     @Override
@@ -80,7 +93,7 @@ public class TweetAdapter extends RecyclerView.Adapter<TweetAdapter.ViewHolder> 
 
 // create viewholder class
 
-    public static class ViewHolder extends RecyclerView.ViewHolder {
+    public class ViewHolder extends RecyclerView.ViewHolder {
         public ImageView ivProfileImage;
         public TextView tvUserName;
         public TextView tvBody;
@@ -110,7 +123,6 @@ public class TweetAdapter extends RecyclerView.Adapter<TweetAdapter.ViewHolder> 
             btnLike = (ImageButton) itemView.findViewById(R.id.btnLike);
             tvRetweet = (TextView) itemView.findViewById(R.id.tvRetweet);
             tvLike = (TextView) itemView.findViewById(R.id.tvLike);
-            liked = false;
             client = TwitterApp.getRestClient(context);
 
             this.btnRespond.setOnClickListener(new View.OnClickListener() {
@@ -127,14 +139,29 @@ public class TweetAdapter extends RecyclerView.Adapter<TweetAdapter.ViewHolder> 
             this.btnLike.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    if (!liked) {
-                        btnLike.setImageResource(R.drawable.ic_vector_heart);
-                        btnLike.setColorFilter(ContextCompat.getColor(context, R.color.medium_red));
-                    } else {
-                        btnLike.setImageResource(R.drawable.ic_vector_heart_stroke);
-                        btnLike.setColorFilter(ContextCompat.getColor(context, R.color.medium_gray));
+                    Log.i("XYZ", "inside onClick");
+                    final int position = getAdapterPosition();
+                    tweet = tweets.get(position);
+                    if (!tweet.liked) {
+                        client.addLike(tweet.uid, new JsonHttpResponseHandler() {
+                            @Override
+                            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+                                tweet.likeCount += 1;
+                                tweet.liked = !(tweet.liked);
+                                notifyItemChanged(position);
+                            }
+                        });
+                    } else if (tweet.liked){
+                        client.subLike(tweet.uid, new JsonHttpResponseHandler() {
+                            @Override
+                            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+                                Log.i("XYZ", "delete this");
+                                tweet.likeCount -= 1;
+                                tweet.liked = !(tweet.liked);
+                                notifyItemChanged(position);
+                            }
+                        });
                     }
-                    liked = !liked;
                 }
             });
         }
@@ -160,11 +187,6 @@ public class TweetAdapter extends RecyclerView.Adapter<TweetAdapter.ViewHolder> 
 
     public void clear() {
         tweets.clear();
-        notifyDataSetChanged();
-    }
-
-    public void addAll(List<Tweet> list) {
-        tweets.addAll(list);
         notifyDataSetChanged();
     }
 
